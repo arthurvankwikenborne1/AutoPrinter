@@ -13,7 +13,7 @@
   <Description DefaultValue="Druk PDF en Word bijlagen af vanuit ongelezen mails"/>
   <IconUrl DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
   <HighResolutionIconUrl DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
-  <SupportUrl DefaultValue="https://localhost:3000"/>
+  <SupportUrl DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter"/>
 
   <Requirements>
     <Sets DefaultMinVersion="1.1">
@@ -24,7 +24,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:3000/src/taskpane/taskpane.html"/>
+        <SourceLocation DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/src/taskpane/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -81,7 +81,7 @@
         <bt:Image id="Icon.80x80" DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/src/taskpane/taskpane.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/src/taskpane/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="PDF Print Agent"/>

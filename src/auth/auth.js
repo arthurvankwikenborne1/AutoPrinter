@@ -8,9 +8,9 @@
 // Zie README.md stap 1 voor instructies.
 const MSAL_CONFIG = {
   auth: {
-    clientId: "8ca79538-b116-425f-b408-ac9b5de7cc5a",           // ← Azure App Registration > Overview > Application ID
+    clientId: "JOUW_CLIENT_ID_HIER",           // ← Azure App Registration > Overview > Application ID
     authority: "https://login.microsoftonline.com/common",
-    redirectUri: "https://localhost:3000/src/auth/auth-redirect.html",
+    redirectUri: "https://arthurvankwikenborne1.github.io/AutoPrinter/src/auth/auth-redirect.html",
   },
   cache: {
     cacheLocation: "sessionStorage",
