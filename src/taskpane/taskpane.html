@@ -5,19 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PDF Print Agent</title>
-
-    <!-- Office.js — altijd eerst laden -->
     <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js" type="text/javascript"></script>
-
-    <!-- MSAL voor authenticatie -->
     <script src="https://alcdn.msauth.net/browser/3.10.0/js/msal-browser.min.js"></script>
-
     <link rel="stylesheet" href="taskpane.css" />
 </head>
 
 <body>
 
-    <!-- ── HEADER ─────────────────────────────────────────────── -->
     <header class="app-header">
         <div class="app-header__logo">
             <span class="app-header__icon">🖨️</span>
@@ -32,16 +26,17 @@
         </div>
     </header>
 
-    <!-- ── TAAL SCHAKELAAR ────────────────────────────────────── -->
     <div class="lang-switcher">
         <button id="langNL" class="lang-btn lang-btn--active">NL</button>
         <button id="langEN" class="lang-btn">EN</button>
+        <button id="historyTab" class="lang-btn" style="margin-left:auto">📋</button>
     </div>
 
-    <!-- ── HOOFD INHOUD ───────────────────────────────────────── -->
+    <div id="printResult" class="print-result" style="display:none"></div>
+
     <main class="app-main">
 
-        <!-- STAAT: idle — startscherm -->
+        <!-- idle -->
         <div id="stateIdle" class="state">
             <div class="idle-content">
                 <div class="idle-icon">📬</div>
@@ -53,7 +48,7 @@
             </div>
         </div>
 
-        <!-- STAAT: loading — scannen -->
+        <!-- loading -->
         <div id="stateLoading" class="state state--hidden">
             <div class="loading-content">
                 <div class="spinner"></div>
@@ -62,23 +57,25 @@
             </div>
         </div>
 
-        <!-- STAAT: loaded — lijst met bijlagen -->
-        <div id="stateLoaded" class="state state--hidden">
+        <!-- printing -->
+        <div id="statePrinting" class="state state--hidden">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p id="printStatus" class="loading-status">Afdrukken...</p>
+            </div>
+        </div>
 
-            <!-- Werkbalk -->
+        <!-- loaded -->
+        <div id="stateLoaded" class="state state--hidden">
             <div class="toolbar">
                 <label class="checkbox-label">
                     <input type="checkbox" id="selectAllCheckbox" />
                     <span id="selectAllLabel">Alles selecteren</span>
                 </label>
                 <span id="selectionCount" class="selection-count"></span>
-                <button id="clearBtn" class="btn btn--ghost btn--small" id="clearBtnLabel">Wissen</button>
+                <button id="clearBtn" class="btn btn--ghost btn--small">Wissen</button>
             </div>
-
-            <!-- Bijlagen lijst -->
             <div id="attachmentList" class="attachment-list"></div>
-
-            <!-- Afdrukknop -->
             <div class="print-bar">
                 <button id="printBtn" class="btn btn--primary btn--full" disabled>
                     <span class="btn__icon">🖨️</span>
@@ -90,7 +87,7 @@
             </div>
         </div>
 
-        <!-- STAAT: empty — geen bijlagen gevonden -->
+        <!-- empty -->
         <div id="stateEmpty" class="state state--hidden">
             <div class="empty-content">
                 <div class="empty-icon">📭</div>
@@ -101,7 +98,7 @@
             </div>
         </div>
 
-        <!-- STAAT: error -->
+        <!-- error -->
         <div id="stateError" class="state state--hidden">
             <div class="error-content">
                 <div class="error-icon">⚠️</div>
@@ -110,9 +107,17 @@
             </div>
         </div>
 
+        <!-- history -->
+        <div id="stateHistory" class="state state--hidden">
+            <div class="toolbar">
+                <button id="backFromHistory" class="btn btn--ghost btn--small">← Terug</button>
+                <span class="th" style="margin-left:8px">Afdrukhistoriek</span>
+            </div>
+            <div id="historyList" class="attachment-list"></div>
+        </div>
+
     </main>
 
-    <!-- Printframe (verborgen) — wordt gebruikt voor afdrukken -->
     <iframe id="printFrame" style="display:none"></iframe>
 
     <script type="module" src="taskpane.js"></script>

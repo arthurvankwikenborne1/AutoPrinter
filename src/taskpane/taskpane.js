@@ -1,24 +1,23 @@
 /**
  * taskpane.js — Hoofdcontroller voor de PDF Print Agent taakvenster
- * Fase 1: Auth + scan + lijstweergave
+ * Fase 2: Afdrukken, gelezen markeren, historiek
  */
 
 import { initAuth, getAccessToken, getCurrentUser, signOut } from "../auth/auth.js";
-import { scanAllFoldersForAttachments } from "../api/graphApi.js";
+import { scanAllFoldersForAttachments, downloadAttachment, markMessageAsRead } from "../api/graphApi.js";
 import { t, setLanguage, getCurrentLanguage } from "../utils/i18n.js";
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let accessToken = null;
-let attachments = [];        // Alle gevonden bijlagen
-let selectedIds = new Set(); // Geselecteerde bijlage-ID's
+let attachments = [];
+let selectedIds = new Set();
 let scanAborted = false;
+let isPrinting = false;
 
 // ─── OFFICE.JS INITIALISATIE ─────────────────────────────────────────────────
 Office.onReady(async () => {
-  console.log("[App] Office.js geladen");
   applyTranslations();
   bindEventListeners();
-
   try {
     await initAuth();
     updateUserInfo();
@@ -30,7 +29,7 @@ Office.onReady(async () => {
 
 // ─── UI STATES ────────────────────────────────────────────────────────────────
 function showState(state) {
-  const states = ["Idle", "Loading", "Loaded", "Empty", "Error"];
+  const states = ["Idle", "Loading", "Loaded", "Empty", "Error", "Printing"];
   states.forEach((s) => {
     document.getElementById(`state${s}`)?.classList.toggle("state--hidden", s.toLowerCase() !== state);
   });
@@ -48,11 +47,9 @@ async function startScan() {
   selectedIds.clear();
 
   try {
-    // Token ophalen (silent of popup)
     accessToken = await getAccessToken();
     updateUserInfo();
 
-    // Scan alle mappen
     attachments = await scanAllFoldersForAttachments(
       accessToken,
       (statusText) => {
@@ -68,12 +65,10 @@ async function startScan() {
       renderAttachmentList();
       showState("loaded");
     }
-
   } catch (err) {
-    console.error("[Scan] Fout:", err);
-    if (err.message?.includes("netwerk") || err.message?.includes("network") || !navigator.onLine) {
+    if (!navigator.onLine) {
       showError(t("errorNetwork"));
-    } else if (err.message?.includes("auth") || err.message?.includes("Auth")) {
+    } else if (err.message?.toLowerCase().includes("auth")) {
       showError(t("errorAuth"));
     } else {
       showError(t("errorGeneral"));
@@ -86,7 +81,6 @@ function renderAttachmentList() {
   const listEl = document.getElementById("attachmentList");
   listEl.innerHTML = "";
 
-  // Groepeer per afzender
   const groups = {};
   for (const att of attachments) {
     const key = att.sender.email || att.sender.name;
@@ -98,7 +92,6 @@ function renderAttachmentList() {
     const groupEl = document.createElement("div");
     groupEl.className = "sender-group";
 
-    // Groepsheader
     const header = document.createElement("div");
     header.className = "sender-group__header";
     header.innerHTML = `
@@ -107,7 +100,6 @@ function renderAttachmentList() {
     `;
     groupEl.appendChild(header);
 
-    // Bijlage items
     for (const att of group.items) {
       groupEl.appendChild(createAttachmentItem(att));
     }
@@ -144,8 +136,7 @@ function createAttachmentItem(att) {
     <div class="attachment-item__size">${sizeStr}</div>
   `;
 
-  // Klikken op rij of checkbox togglet selectie
-  itemEl.addEventListener("click", (e) => {
+  itemEl.addEventListener("click", () => {
     toggleSelection(att.attachmentId, itemEl, itemEl.querySelector("input"));
   });
 
@@ -170,17 +161,14 @@ function updateToolbar() {
   const count = selectedIds.size;
   const total = attachments.length;
 
-  // Teller
   document.getElementById("selectionCount").textContent =
     count > 0 ? t("selected", count) : "";
 
-  // Afdrukknop
   const printBtn = document.getElementById("printBtn");
-  printBtn.disabled = count === 0;
+  printBtn.disabled = count === 0 || isPrinting;
   document.getElementById("printBtnLabel").textContent =
     count > 0 ? t("printButtonWithCount", count) : t("printButton");
 
-  // Selecteer-alles checkbox
   const selectAllCb = document.getElementById("selectAllCheckbox");
   selectAllCb.checked = count === total && total > 0;
   selectAllCb.indeterminate = count > 0 && count < total;
@@ -192,9 +180,7 @@ function selectAll(checked) {
     else selectedIds.delete(att.attachmentId);
   });
 
-  // Update alle checkboxes visueel
   document.querySelectorAll(".attachment-item").forEach((itemEl) => {
-    const id = itemEl.dataset.id;
     const checkbox = itemEl.querySelector("input");
     if (checked) {
       itemEl.classList.add("attachment-item--selected");
@@ -208,11 +194,142 @@ function selectAll(checked) {
   updateToolbar();
 }
 
-// ─── AFDRUKKEN (Fase 2 placeholder) ──────────────────────────────────────────
-function handlePrint() {
+// ─── AFDRUKKEN ────────────────────────────────────────────────────────────────
+async function handlePrint() {
   const selected = attachments.filter((a) => selectedIds.has(a.attachmentId));
-  // TODO Fase 2: bijlagen downloaden en window.print() aanroepen
-  alert(`Afdrukken van ${selected.length} bestand(en) — wordt geïmplementeerd in Fase 2.\n\nGeselecteerd:\n${selected.map(a => a.fileName).join("\n")}`);
+  if (selected.length === 0) return;
+
+  isPrinting = true;
+  updateToolbar();
+
+  const printStatus = document.getElementById("printStatus");
+  const printFrame = document.getElementById("printFrame");
+  showState("printing");
+
+  const results = { success: [], failed: [] };
+
+  for (const att of selected) {
+    try {
+      // Status tonen
+      if (printStatus) {
+        printStatus.textContent = `${t("printing")} ${att.fileName}... (${results.success.length + results.failed.length + 1}/${selected.length})`;
+      }
+
+      // Bijlage downloaden
+      const blob = await downloadAttachment(att.messageId, att.attachmentId, accessToken);
+      const url = URL.createObjectURL(blob);
+
+      // Afdrukken via verborgen iframe
+      await printBlob(url, att.fileType, printFrame);
+
+      // Mail markeren als gelezen
+      await markMessageAsRead(att.messageId, accessToken);
+
+      results.success.push(att);
+
+      // Historiek opslaan
+      saveToHistory(att);
+
+      // URL vrijgeven
+      URL.revokeObjectURL(url);
+
+    } catch (err) {
+      console.error(`[Print] Fout bij ${att.fileName}:`, err);
+      results.failed.push({ att, error: err.message });
+    }
+  }
+
+  isPrinting = false;
+
+  // Toon resultaat
+  showPrintResult(results);
+
+  // Verwijder afgedrukte items uit de lijst
+  attachments = attachments.filter(
+    (a) => !results.success.some((s) => s.attachmentId === a.attachmentId)
+  );
+  results.success.forEach((a) => selectedIds.delete(a.attachmentId));
+
+  if (attachments.length === 0) {
+    showState("empty");
+  } else {
+    renderAttachmentList();
+    showState("loaded");
+  }
+}
+
+function printBlob(url, fileType, printFrame) {
+  return new Promise((resolve) => {
+    printFrame.onload = () => {
+      try {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+      } catch (e) {
+        console.warn("[Print] Print dialoog kon niet worden geopend:", e);
+      }
+      setTimeout(resolve, 1500);
+    };
+    printFrame.src = url;
+  });
+}
+
+function showPrintResult(results) {
+  const successCount = results.success.length;
+  const failCount = results.failed.length;
+
+  let msg = "";
+  if (successCount > 0) msg += `✅ ${successCount} bestand(en) afgedrukt. `;
+  if (failCount > 0) {
+    msg += `⚠️ ${failCount} mislukt: `;
+    msg += results.failed.map((f) => f.att.fileName).join(", ");
+  }
+
+  const el = document.getElementById("printResult");
+  if (el) {
+    el.textContent = msg;
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 6000);
+  }
+}
+
+// ─── HISTORIEK ────────────────────────────────────────────────────────────────
+function saveToHistory(att) {
+  try {
+    const key = "printHistory";
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    existing.unshift({
+      fileName: att.fileName,
+      sender: att.sender.name,
+      subject: att.subject,
+      printedAt: new Date().toISOString(),
+    });
+    // Max 200 records
+    localStorage.setItem(key, JSON.stringify(existing.slice(0, 200)));
+  } catch (e) {
+    console.warn("[History] Kon niet opslaan:", e);
+  }
+}
+
+function renderHistory() {
+  const historyEl = document.getElementById("historyList");
+  if (!historyEl) return;
+
+  try {
+    const history = JSON.parse(localStorage.getItem("printHistory") || "[]");
+    if (history.length === 0) {
+      historyEl.innerHTML = `<p class="empty-message">${t("historyEmpty")}</p>`;
+      return;
+    }
+
+    historyEl.innerHTML = history.map((item) => `
+      <div class="history-item">
+        <div class="history-item__name">${escHtml(item.fileName)}</div>
+        <div class="history-item__meta">${escHtml(item.sender)} · ${formatDate(item.printedAt)}</div>
+      </div>
+    `).join("");
+  } catch (e) {
+    historyEl.innerHTML = `<p class="empty-message">${t("historyEmpty")}</p>`;
+  }
 }
 
 // ─── TAAL ─────────────────────────────────────────────────────────────────────
@@ -262,6 +379,15 @@ function bindEventListeners() {
   });
   document.getElementById("langNL").addEventListener("click", () => switchLanguage("nl"));
   document.getElementById("langEN").addEventListener("click", () => switchLanguage("en"));
+  document.getElementById("historyTab")?.addEventListener("click", () => {
+    renderHistory();
+    document.getElementById("stateHistory")?.classList.remove("state--hidden");
+    document.getElementById("stateLoaded")?.classList.add("state--hidden");
+  });
+  document.getElementById("backFromHistory")?.addEventListener("click", () => {
+    document.getElementById("stateHistory")?.classList.add("state--hidden");
+    showState(attachments.length > 0 ? "loaded" : "idle");
+  });
 }
 
 // ─── HULPFUNCTIES ─────────────────────────────────────────────────────────────
@@ -278,13 +404,10 @@ function formatDate(isoString) {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-
   if (date.toDateString() === today.toDateString()) return t("today");
   if (date.toDateString() === yesterday.toDateString()) return t("yesterday");
   return date.toLocaleDateString(getCurrentLanguage() === "nl" ? "nl-BE" : "en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+    day: "2-digit", month: "short", year: "numeric",
   });
 }
 
