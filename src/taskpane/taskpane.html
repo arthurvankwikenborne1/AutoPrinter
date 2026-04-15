@@ -16,7 +16,7 @@
         <div class="app-header__logo">
             <span class="app-header__icon">🖨️</span>
             <div>
-                <h1 class="app-header__title" id="appTitle">PDF Print Agent</h1>
+                <h1 class="app-header__title">PDF Print Agent</h1>
                 <p class="app-header__subtitle" id="appSubtitle">Druk bijlagen af vanuit ongelezen mails</p>
             </div>
         </div>
@@ -29,7 +29,7 @@
     <div class="lang-switcher">
         <button id="langNL" class="lang-btn lang-btn--active">NL</button>
         <button id="langEN" class="lang-btn">EN</button>
-        <button id="historyTab" class="lang-btn" style="margin-left:auto">📋</button>
+        <button id="historyTab" class="lang-btn lang-btn--history" title="Historiek">📋</button>
     </div>
 
     <div id="printResult" class="print-result" style="display:none"></div>
@@ -110,8 +110,10 @@
         <!-- history -->
         <div id="stateHistory" class="state state--hidden">
             <div class="toolbar">
-                <button id="backFromHistory" class="btn btn--ghost btn--small">← Terug</button>
-                <span class="th" style="margin-left:8px">Afdrukhistoriek</span>
+                <button id="backFromHistory" class="btn btn--ghost btn--small">
+                    <span id="backFromHistoryLabel">← Terug</span>
+                </button>
+                <span id="historyTitle" class="toolbar-title">Afdrukhistoriek</span>
             </div>
             <div id="historyList" class="attachment-list"></div>
         </div>
@@ -119,7 +121,6 @@
     </main>
 
     <iframe id="printFrame" style="display:none"></iframe>
-
     <script type="module" src="taskpane.js"></script>
 </body>
 

@@ -341,3 +341,23 @@ body {
   color: #605e5c;
   margin-top: 2px;
 }
+
+/* ─── Fase 3 updates ────────────────────────────────────────────────────── */
+.print-result--success { background:#dff6dd; color:#1e4620; border-bottom:1px solid #a8d5a2; }
+.print-result--error   { background:#fde7e9; color:#a4262c; border-bottom:1px solid #f4b8bc; }
+.print-result--warning { background:#fff4ce; color:#7d5a00; border-bottom:1px solid #f8d567; }
+
+.lang-btn--history { margin-left:auto; }
+
+.toolbar-title { font-size:13px; font-weight:600; color:#323130; margin-left:8px; }
+
+.history-item {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 12px; border-bottom:1px solid #f3f2f1;
+}
+.history-item__icon { font-size:18px; flex-shrink:0; margin-top:2px; }
+.history-item__info { flex:1; min-width:0; }
+.history-item__name { font-weight:600; font-size:12px; color:#201f1e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.history-item__meta { font-size:11px; color:#605e5c; margin-top:2px; }
+.history-item__subject { font-size:11px; color:#a19f9d; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.history-item__time { font-size:11px; color:#a19f9d; flex-shrink:0; margin-top:2px; }

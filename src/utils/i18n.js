@@ -1,5 +1,5 @@
 /**
- * i18n.js — Vertalingen NL-BE / EN
+ * i18n.js — Vertalingen NL-BE / EN (Fase 3: volledig)
  */
 
 export const translations = {
@@ -23,15 +23,30 @@ export const translations = {
     largeFile: "Groot bestand",
     today: "Vandaag",
     yesterday: "Gisteren",
+    printing: "Afdrukken...",
+    printSuccess: (n) => `✅ ${n} bestand(en) afgedrukt.`,
+    printPartial: (s, f) => `✅ ${s} afgedrukt · ⚠️ ${f} mislukt`,
+    printFailed: (n) => `⚠️ ${n} bestand(en) mislukt.`,
     errorNetwork: "Geen verbinding. Controleer uw internetverbinding.",
-    errorAuth: "Authenticatie mislukt. Probeer opnieuw.",
+    errorAuth: "Authenticatie mislukt. Meld u opnieuw aan.",
     errorGeneral: "Er is een fout opgetreden. Probeer opnieuw.",
+    errorDownload: (name) => `Download mislukt: ${name}`,
+    errorPrint: (name) => `Afdrukken mislukt: ${name}`,
+    errorMarkRead: "Mail markeren als gelezen mislukt.",
+    errorTimeout: "De bewerking duurde te lang. Probeer opnieuw.",
     history: "Historiek",
     historyEmpty: "Nog geen afdrukken geregistreerd.",
+    historyBack: "← Terug",
+    historyTitle: "Afdrukhistoriek",
+    historyPrintedAt: "Afgedrukt op",
     settings: "Instellingen",
     language: "Taal",
     loggedInAs: "Ingelogd als",
     signOut: "Afmelden",
+    cancel: "Annuleren",
+    retry: "Opnieuw proberen",
+    scanDesc: "Klik op de knop om uw ongelezen mails te scannen op PDF en Word bijlagen.",
+    largeFileWarning: (name) => `⚠️ "${name}" is groter dan 10 MB. Dit kan lang duren.`,
   },
   en: {
     appTitle: "PDF Print Agent",
@@ -53,15 +68,30 @@ export const translations = {
     largeFile: "Large file",
     today: "Today",
     yesterday: "Yesterday",
+    printing: "Printing...",
+    printSuccess: (n) => `✅ ${n} file(s) printed.`,
+    printPartial: (s, f) => `✅ ${s} printed · ⚠️ ${f} failed`,
+    printFailed: (n) => `⚠️ ${n} file(s) failed.`,
     errorNetwork: "No connection. Please check your internet connection.",
-    errorAuth: "Authentication failed. Please try again.",
+    errorAuth: "Authentication failed. Please sign in again.",
     errorGeneral: "An error occurred. Please try again.",
+    errorDownload: (name) => `Download failed: ${name}`,
+    errorPrint: (name) => `Print failed: ${name}`,
+    errorMarkRead: "Failed to mark email as read.",
+    errorTimeout: "The operation took too long. Please try again.",
     history: "History",
     historyEmpty: "No print jobs recorded yet.",
+    historyBack: "← Back",
+    historyTitle: "Print history",
+    historyPrintedAt: "Printed at",
     settings: "Settings",
     language: "Language",
     loggedInAs: "Logged in as",
     signOut: "Sign out",
+    cancel: "Cancel",
+    retry: "Try again",
+    scanDesc: "Click the button to scan your unread emails for PDF and Word attachments.",
+    largeFileWarning: (name) => `⚠️ "${name}" is larger than 10 MB. This may take a while.`,
   },
 };
 
@@ -69,6 +99,14 @@ let currentLang = "nl";
 
 export function setLanguage(lang) {
   currentLang = lang === "en" ? "en" : "nl";
+  try { localStorage.setItem("autoprinter_lang", currentLang); } catch(e) {}
+}
+
+export function initLanguage() {
+  try {
+    const saved = localStorage.getItem("autoprinter_lang");
+    if (saved === "en" || saved === "nl") currentLang = saved;
+  } catch(e) {}
 }
 
 export function t(key, ...args) {
