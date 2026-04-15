@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Auth Redirect</title>
+    <!-- MSAL verwerkt automatisch de redirect response via handleRedirectPromise() -->
+    <script src="https://alcdn.msauth.net/browser/3.10.0/js/msal-browser.min.js"></script>
+    <script>
+        // Verwerk de redirect na login — geen verdere actie nodig
+        const msalInstance = new msal.PublicClientApplication({
+            auth: {
+                clientId: "8ca79538-b116-425f-b408-ac9b5de7cc5a",
+                authority: "https://login.microsoftonline.com/common",
+                redirectUri: window.location.href,
+            },
+            cache: { cacheLocation: "sessionStorage" }
+        });
+        msalInstance.initialize().then(() => {
+            msalInstance.handleRedirectPromise().then(() => {
+                window.close(); // Sluit popup na succesvolle auth
+            });
+        });
+    </script>
+</head>
+
+<body></body>
+
+</html>
