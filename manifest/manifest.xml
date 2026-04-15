@@ -8,11 +8,11 @@
   <Id>a1b2c3d4-e5f6-7890-abcd-ef1234567890</Id>
   <Version>1.0.0.0</Version>
   <ProviderName>AutoPrinter</ProviderName>
-  <DefaultLocale>nl-BE</DefaultLocale>
+  <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="PDF Print Agent"/>
-  <Description DefaultValue="Druk PDF en Word bijlagen af vanuit ongelezen mails"/>
-  <IconUrl DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
-  <HighResolutionIconUrl DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
+  <Description DefaultValue="Print PDF and Word attachments from unread emails"/>
+  <IconUrl DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/assets/icon-80.png"/>
+  <HighResolutionIconUrl DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/assets/icon-80.png"/>
   <SupportUrl DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter"/>
 
   <Requirements>
@@ -42,7 +42,6 @@
         <bt:Set Name="Mailbox" MinVersion="1.1"/>
       </bt:Sets>
     </Requirements>
-
     <Hosts>
       <Host xsi:type="MailHost">
         <DesktopFormFactor>
@@ -73,25 +72,23 @@
         </DesktopFormFactor>
       </Host>
     </Hosts>
-
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://cdn.jsdelivr.net/npm/@fluentui/svg-icons/icons/print_24_regular.svg"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/assets/icon-80.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/assets/icon-80.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Taskpane.Url" DefaultValue="https://arthurvankwikenborne1.github.io/AutoPrinter/src/taskpane/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="PDF Print Agent"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="PDF Afdrukken"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Print PDF"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Druk PDF en Word bijlagen af vanuit ongelezen mails"/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Print PDF and Word attachments from unread emails"/>
       </bt:LongStrings>
     </Resources>
-
   </VersionOverrides>
 
 </OfficeApp>
